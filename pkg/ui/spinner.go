@@ -21,7 +21,7 @@ type taskResultMsg struct {
 	err     error
 }
 
-func NewSpinner(task func() ([]string, error)) error {
+func NewSpinner(task func() ([]string, error)) {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -33,18 +33,18 @@ func NewSpinner(task func() ([]string, error)) error {
 	p := tea.NewProgram(model)
 	m, err := p.Run()
 	if err != nil {
-		return err
+		fmt.Println(ErrorStyle.Render(err.Error()))
+		return
 	}
 
 	if m.(spinnerModel).err != nil {
-		return m.(spinnerModel).err
+		fmt.Println(ErrorStyle.Render(m.(spinnerModel).err.Error()))
+		return
 	}
 
 	for _, msg := range m.(spinnerModel).results {
 		fmt.Println(msg)
 	}
-
-	return nil
 }
 
 func (m spinnerModel) Init() tea.Cmd {

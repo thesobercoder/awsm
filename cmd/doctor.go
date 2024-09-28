@@ -28,7 +28,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/thesobercoder/awsm/pkg/ui"
 )
@@ -46,25 +45,17 @@ If AWS CLI is not installed, an error message will be displayed.`,
 		ui.NewSpinner(func() ([]string, error) {
 			var messages []string
 
-			var errorStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.Color("1"))
-
-			var successStyle = lipgloss.NewStyle().
-				Bold(true).
-				Foreground(lipgloss.Color("2"))
-
 			if _, err := exec.LookPath("aws"); err != nil {
-				messages = append(messages, errorStyle.Render("✘ AWS CLI not found in PATH"))
+				messages = append(messages, ui.ErrorStyle.Render("AWS CLI not found in PATH"))
 			} else {
-				messages = append(messages, successStyle.Render("✔ AWS CLI found in PATH"))
+				messages = append(messages, ui.SuccessStyle.Render("AWS CLI found in PATH"))
 			}
 
 			configFilePath := filepath.Join(os.Getenv("HOME"), ".aws", "config")
 			if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-				messages = append(messages, errorStyle.Render(fmt.Sprintf("✘ AWS CLI config file not found at %s", configFilePath)))
+				messages = append(messages, ui.ErrorStyle.Render(fmt.Sprintf("AWS CLI config file not found at %s", configFilePath)))
 			} else {
-				messages = append(messages, successStyle.Render(fmt.Sprintf("✔ AWS CLI config file found at %s", configFilePath)))
+				messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI config file found at %s", configFilePath)))
 			}
 
 			time.Sleep(500 * time.Millisecond)
