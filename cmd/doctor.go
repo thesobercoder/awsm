@@ -23,13 +23,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
-	"github.com/thesobercoder/awsm/pkg/ui"
+	"github.com/thesobercoder/awsm/pkg/core"
 )
 
 // doctorCmd represents the doctor command
@@ -42,25 +40,17 @@ If AWS CLI is not installed, an error message will be displayed.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Print("\n")
 
-		ui.NewSpinner(func() ([]string, error) {
-			var messages []string
+		spin := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+		spin.Suffix = "  Checking..."
+		spin.Color("yellow", "bold")
+		spin.Start()
+		messages := core.Doctor()
+		time.Sleep(500 * time.Millisecond)
+		spin.Stop()
 
-			if _, err := exec.LookPath("aws"); err != nil {
-				messages = append(messages, ui.ErrorStyle.Render("AWS CLI not found in PATH"))
-			} else {
-				messages = append(messages, ui.SuccessStyle.Render("AWS CLI found in PATH"))
-			}
-
-			configFilePath := filepath.Join(os.Getenv("HOME"), ".aws", "config")
-			if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-				messages = append(messages, ui.ErrorStyle.Render(fmt.Sprintf("AWS CLI config file not found at %s", configFilePath)))
-			} else {
-				messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI config file found at %s", configFilePath)))
-			}
-
-			time.Sleep(500 * time.Millisecond)
-			return messages, nil
-		})
+		for _, msg := range messages {
+			fmt.Println(msg)
+		}
 	},
 }
 

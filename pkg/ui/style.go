@@ -2,16 +2,18 @@ package ui
 
 import "github.com/charmbracelet/lipgloss"
 
-var ErrorStyle = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("1")).
-	Transform(func(s string) string {
-		return "✘ " + s
-	})
+var RedStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("1"))
+
+var GreenStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("2"))
 
 var SuccessStyle = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("2")).
 	Transform(func(s string) string {
-		return "✔ " + s
+		return GreenStyle.Render("✔ ") + s
+	})
+
+var ErrorStyle = lipgloss.NewStyle().
+	Transform(func(s string) string {
+		return RedStyle.Render("✖ ") + s
 	})
