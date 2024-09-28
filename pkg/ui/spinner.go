@@ -16,7 +16,7 @@ type spinnerModel struct {
 	results []string
 }
 
-type taskResultMsg struct {
+type taskResult struct {
 	results []string
 	err     error
 }
@@ -60,7 +60,7 @@ func (m spinnerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		return m, cmd
-	case taskResultMsg:
+	case taskResult:
 		if msg.err != nil {
 			m.err = msg.err
 		} else {
@@ -83,6 +83,6 @@ func (m spinnerModel) View() string {
 func (m spinnerModel) runTask() tea.Cmd {
 	return func() tea.Msg {
 		results, err := m.task()
-		return taskResultMsg{results, err}
+		return taskResult{results, err}
 	}
 }
