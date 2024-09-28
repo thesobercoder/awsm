@@ -23,8 +23,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
 // doctorCmd represents the doctor command
@@ -33,24 +39,40 @@ var doctorCmd = &cobra.Command{
 	Short: "Checks if the AWS CLI is installed and configured properly",
 	Long: `Checks if AWS CLI is installed and configured properly.
 
-If AWS CLI is not installed, it will be installed.
-If AWS CLI is installed but not configured, it will be configured.
-If AWS CLI is installed and configured, it will be checked for updates.`,
+If AWS CLI is not installed, an error message will be displayed.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("doctor called")
+		fmt.Print("\n")
+
+		ui.NewSpinner(func() ([]string, error) {
+			var messages []string
+
+			var errorStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("1"))
+
+			var successStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(lipgloss.Color("2"))
+
+			if _, err := exec.LookPath("aws"); err != nil {
+				messages = append(messages, errorStyle.Render("✘ AWS CLI not found in PATH"))
+			} else {
+				messages = append(messages, successStyle.Render("✔ AWS CLI found in PATH"))
+			}
+
+			configFilePath := filepath.Join(os.Getenv("HOME"), ".aws", "config")
+			if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+				messages = append(messages, errorStyle.Render(fmt.Sprintf("✘ AWS CLI config file not found at %s", configFilePath)))
+			} else {
+				messages = append(messages, successStyle.Render(fmt.Sprintf("✔ AWS CLI config file found at %s", configFilePath)))
+			}
+
+			time.Sleep(500 * time.Millisecond)
+			return messages, nil
+		})
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(doctorCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// doctorCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// doctorCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
