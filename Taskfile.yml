@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+  run:
+    desc: Run the main.go file
+    cmds:
+      - go run main.go {{.CLI_ARGS}}
+    silent: true
+  add:
+    desc: Add a new command to the CLI
+    cmds:
+      - 'cobra-cli add $(gum input --prompt "Command Name: ") --author "Soham Dasgupta soham@thesobercoder.com" --license MIT'
+    silent: true
