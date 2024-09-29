@@ -23,8 +23,13 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
+	"github.com/thesobercoder/awsm/pkg/core"
+	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
 // switchCmd represents the switch command
@@ -38,7 +43,60 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("switch called")
+		var profiles []string
+		var path string
+
+		action := func() {
+			profiles, _ = core.ListProfiles()
+			time.Sleep(time.Millisecond * 500)
+		}
+
+		err := spinner.New().
+			Title("Searching Profiles").
+			Action(action).
+			Run()
+
+		if err != nil {
+			fmt.Println(ui.ErrorStyle.Render(err.Error()))
+			return
+		}
+
+		var profile string
+		var options []huh.Option[string]
+		for _, profile := range profiles {
+			options = append(options, huh.NewOption(profile, profile))
+		}
+
+		huh.NewSelect[string]().
+			Title("Choose Profile").
+			Options(options...).
+			Value(&profile).
+			Run()
+
+		action = func() {
+			path, err = core.SwitchProfile(profile)
+			time.Sleep(time.Millisecond * 500)
+		}
+
+		err = spinner.New().
+			Title("Switching Profile").
+			Action(action).
+			Run()
+
+		if err != nil {
+			fmt.Println(ui.ErrorStyle.Render(err.Error()))
+			return
+		}
+
+		fmt.Println(ui.SuccessStyle.Render(fmt.Sprintf("Switched to profile: %s", profile)))
+		fmt.Println(ui.SuccessStyle.Render(fmt.Sprintf("Exported AWS profile to %s", path)))
+		fmt.Println("")
+
+		command1 := "export $(cat .env | xargs)"
+		command2 := "Get-Content .env | ForEach-Object { $var = $_.Split('='); Set-Item \"Env:$($var[0])\" $var[1] }"
+
+		fmt.Printf("Run `%s` to set environment variables in any posix shell\n", ui.GreenStyle.Render(command1))
+		fmt.Printf("Run `%s` to set environment variables in PowerShell\n", ui.GreenStyle.Render(command2))
 	},
 }
 

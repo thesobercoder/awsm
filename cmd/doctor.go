@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/briandowns/spinner"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
 	"github.com/thesobercoder/awsm/pkg/core"
 )
@@ -38,15 +38,22 @@ var doctorCmd = &cobra.Command{
 
 If AWS CLI is not installed, an error message will be displayed.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print("\n")
+		var messages []string
 
-		spin := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-		spin.Suffix = "  Checking..."
-		spin.Color("yellow", "bold")
-		spin.Start()
-		messages := core.Doctor()
-		time.Sleep(500 * time.Millisecond)
-		spin.Stop()
+		action := func() {
+			messages = core.Doctor()
+			time.Sleep(time.Millisecond * 500)
+		}
+
+		err := spinner.New().
+			Title("Checking prerequisites").
+			Action(action).
+			Run()
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
 		for _, msg := range messages {
 			fmt.Println(msg)

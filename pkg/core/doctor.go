@@ -26,18 +26,10 @@ func Doctor() []string {
 		messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI config file found at %s", configFilePath)))
 	}
 
-	data, err := exec.Command("aws", "--no-cli-pager", "configure", "list-profiles").Output()
+	validProfiles, err := ListProfiles()
 	if err != nil {
 		messages = append(messages, ui.ErrorStyle.Render("Failed to get AWS CLI profiles"))
 		return messages
-	}
-
-	profiles := strings.Split(string(data), "\n")
-	validProfiles := []string{}
-	for _, profile := range profiles {
-		if profile != "" {
-			validProfiles = append(validProfiles, profile)
-		}
 	}
 
 	if len(validProfiles) == 0 {
