@@ -23,7 +23,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/huh/spinner"
@@ -48,10 +47,11 @@ to quickly create a Cobra application.`,
 
 		action := func() {
 			profiles, _ = core.ListProfiles()
-			time.Sleep(time.Millisecond * 500)
 		}
 
-		err := spinner.New().
+		spin := spinner.New()
+
+		err := spin.
 			Title("Searching Profiles").
 			Action(action).
 			Run()
@@ -75,10 +75,9 @@ to quickly create a Cobra application.`,
 
 		action = func() {
 			path, err = core.SwitchProfile(profile, false)
-			time.Sleep(time.Millisecond * 500)
 		}
 
-		err = spinner.New().
+		err = spin.
 			Title("Switching Profile").
 			Action(action).
 			Run()

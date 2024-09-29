@@ -51,7 +51,9 @@ to quickly create a Cobra application.`,
 			time.Sleep(time.Millisecond * 500)
 		}
 
-		err := spinner.New().
+		spin := spinner.New()
+
+		err := spin.
 			Title("Searching Profiles").
 			Action(action).
 			Run()
@@ -78,7 +80,7 @@ to quickly create a Cobra application.`,
 			time.Sleep(time.Millisecond * 500)
 		}
 
-		err = spinner.New().
+		err = spin.
 			Title("Logging in to profile").
 			Action(action).
 			Run()
