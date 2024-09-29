@@ -13,8 +13,7 @@ func WriteEnvFile(envVars map[string]string) (string, error) {
 		return "", err
 	}
 
-	envFilePath := filepath.Join(workingDir, ".env")
-
+	envFilePath := filepath.Join(workingDir, ".awsm", ".env")
 	existingEnv, err := godotenv.Read(envFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
