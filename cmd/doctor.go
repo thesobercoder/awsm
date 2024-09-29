@@ -40,7 +40,7 @@ var doctorCmd = &cobra.Command{
 If AWS CLI is not installed, an error message will be displayed.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var messages []string
-		var errors []*core.AWSMError
+		var errors []error
 
 		action := func() {
 			messages, errors = core.Doctor()
@@ -62,7 +62,7 @@ If AWS CLI is not installed, an error message will be displayed.`,
 		}
 
 		for _, err := range errors {
-			fmt.Println(ui.SuccessStyle.Render(err.Message))
+			fmt.Println(ui.SuccessStyle.Render(err.Error()))
 		}
 	},
 }

@@ -23,8 +23,12 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
+	"github.com/thesobercoder/awsm/pkg/core"
+	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
 // listCmd represents the list command
@@ -38,7 +42,30 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("get called")
+		var profile string
+		var error error
+
+		action := func() {
+			profile, error = core.DetectCurrentProfile()
+			time.Sleep(time.Millisecond * 500)
+		}
+
+		err := spinner.New().
+			Title("Detecting current profile").
+			Action(action).
+			Run()
+
+		if err != nil {
+			fmt.Println(ui.SuccessStyle.Render(err.Error()))
+			return
+		}
+
+		if error != nil {
+			fmt.Println(ui.ErrorStyle.Render(error.Error()))
+			return
+		}
+
+		fmt.Println(ui.SuccessStyle.Render(fmt.Sprint("Current profile: ", profile)))
 	},
 }
 

@@ -1,8 +1,11 @@
 package core
 
 import (
+	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 func ListProfiles() ([]string, error) {
@@ -25,25 +28,25 @@ func ListProfiles() ([]string, error) {
 func SwitchProfile(profile string, login bool) (string, error) {
 	if login {
 		if err := ExecSilent("aws", "sso", "login", "--profile", profile, "--no-cli-pager"); err != nil {
-			return "", err
+			return "", NewAWSMError("Failed to login via AWS SSO", ExecutionError)
 		}
 	} else {
 		if err := ExecSilent("aws", "s3", "ls", "--profile", profile, "--no-cli-pager"); err != nil {
 			err = ExecSilent("aws", "sso", "login", "--profile", profile, "--no-cli-pager")
 			if err != nil {
-				return "", err
+				return "", NewAWSMError("Failed to login via AWS SSO", ExecutionError)
 			}
 		}
 	}
 
 	accountId, err := ExecWithOutput("aws", "configure", "get", "sso_account_id", "--profile", profile, "--no-cli-pager")
 	if err != nil {
-		return "", err
+		return "", NewAWSMError("Failed to get AWS account", ExecutionError)
 	}
 
 	region, err := ExecWithOutput("aws", "configure", "get", "region", "--profile", profile, "--no-cli-pager")
 	if err != nil {
-		return "", err
+		return "", NewAWSMError("Failed to get AWS region", ExecutionError)
 	}
 
 	envVars := make(map[string]string)
@@ -60,8 +63,33 @@ func SwitchProfile(profile string, login bool) (string, error) {
 
 	path, err := WriteEnvFile(envVars)
 	if err != nil {
-		return "", err
+		return "", NewAWSMError("Failed to write environment file", IOError)
 	}
 
 	return path, nil
+}
+
+func DetectCurrentProfile() (string, error) {
+	if value, exists := os.LookupEnv("AWS_PROFILE"); exists {
+		return value, nil
+	}
+
+	if value, exists := os.LookupEnv("AWS_DEFAULT_PROFILE"); exists {
+		return value, nil
+	}
+
+	err := godotenv.Load()
+	if err != nil {
+		return "", NewAWSMError("Error loading .env file", IOError)
+	}
+
+	if value, exists := os.LookupEnv("AWS_PROFILE"); exists {
+		return value, nil
+	}
+
+	if value, exists := os.LookupEnv("AWS_DEFAULT_PROFILE"); exists {
+		return value, nil
+	}
+
+	return "", NewAWSMError("No AWS profile found in environment", EnvironmentError)
 }

@@ -47,13 +47,13 @@ to quickly create a Cobra application.`,
 		cmdPathParts := strings.Fields(cmd.CommandPath())
 		if len(cmdPathParts) > 1 {
 			switch cmdPathParts[1] {
-			case "doctor", "profile":
+			case "doctor":
 				// Ignore these commands
 			default:
 				_, errors := core.Doctor()
 				if len(errors) > 0 {
 					for _, err := range errors {
-						fmt.Println(ui.SuccessStyle.Render(err.Message))
+						fmt.Println(ui.SuccessStyle.Render(err.Error()))
 					}
 					os.Exit(1)
 				}
