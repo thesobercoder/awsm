@@ -74,7 +74,7 @@ to quickly create a Cobra application.`,
 			Run()
 
 		action = func() {
-			path, err = core.SwitchProfile(profile)
+			path, err = core.SwitchProfile(profile, false)
 			time.Sleep(time.Millisecond * 500)
 		}
 

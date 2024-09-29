@@ -22,32 +22,40 @@ func ListProfiles() ([]string, error) {
 	return validProfiles, nil
 }
 
-func SwitchProfile(profile string) (string, error) {
-	err := exec.Command("aws", "s3", "ls", "--profile", profile, "--no-cli-pager").Run()
-	if err != nil {
-		err = exec.Command("aws", "sso", "login", "--profile", profile, "--no-cli-pager").Run()
-		if err != nil {
+func SwitchProfile(profile string, login bool) (string, error) {
+	if login {
+		if err := ExecSilent("aws", "sso", "login", "--profile", profile, "--no-cli-pager"); err != nil {
 			return "", err
+		}
+	} else {
+		if err := ExecSilent("aws", "s3", "ls", "--profile", profile, "--no-cli-pager"); err != nil {
+			err = ExecSilent("aws", "sso", "login", "--profile", profile, "--no-cli-pager")
+			if err != nil {
+				return "", err
+			}
 		}
 	}
 
-	accountId, err := exec.Command("aws", "configure", "get", "sso_account_id", "--profile", profile, "--no-cli-pager").Output()
+	accountId, err := ExecWithOutput("aws", "configure", "get", "sso_account_id", "--profile", profile, "--no-cli-pager")
 	if err != nil {
 		return "", err
 	}
 
-	region, err := exec.Command("aws", "configure", "get", "region", "--profile", profile, "--no-cli-pager").Output()
+	region, err := ExecWithOutput("aws", "configure", "get", "region", "--profile", profile, "--no-cli-pager")
 	if err != nil {
 		return "", err
 	}
 
-	envVars := map[string]string{
-		"AWS_PROFILE":         profile,
-		"AWS_DEFAULT_PROFILE": profile,
-		"AWS_EB_PROFILE":      profile,
-		"AWS_ACCOUNT":         strings.TrimSpace(string(accountId)),
-		"AWS_REGION":          strings.TrimSpace(string(region)),
-		"AWS_DEFAULT_REGION":  strings.TrimSpace(string(region)),
+	envVars := make(map[string]string)
+	envVars["AWS_PROFILE"] = profile
+	envVars["AWS_DEFAULT_PROFILE"] = profile
+	envVars["AWS_EB_PROFILE"] = profile
+	if accountIdStr := strings.TrimSpace(string(accountId)); accountIdStr != "" {
+		envVars["AWS_ACCOUNT"] = accountIdStr
+	}
+	if regionStr := strings.TrimSpace(string(region)); regionStr != "" {
+		envVars["AWS_REGION"] = regionStr
+		envVars["AWS_DEFAULT_REGION"] = regionStr
 	}
 
 	path, err := WriteEnvFile(envVars)

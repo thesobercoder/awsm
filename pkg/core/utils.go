@@ -2,6 +2,7 @@ package core
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/joho/godotenv"
@@ -13,7 +14,7 @@ func WriteEnvFile(envVars map[string]string) (string, error) {
 		return "", err
 	}
 
-	envFilePath := filepath.Join(workingDir, ".awsm", ".env")
+	envFilePath := filepath.Join(workingDir, ".env")
 	existingEnv, err := godotenv.Read(envFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -31,4 +32,14 @@ func WriteEnvFile(envVars map[string]string) (string, error) {
 	}
 
 	return envFilePath, nil
+}
+
+func ExecWithOutput(args ...string) ([]byte, error) {
+	cmd := exec.Command(args[0], args[1:]...)
+	return cmd.Output()
+}
+
+func ExecSilent(args ...string) error {
+	cmd := exec.Command(args[0], args[1:]...)
+	return cmd.Run()
 }
