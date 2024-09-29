@@ -42,11 +42,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var profile string
-		var error error
+		var envVars map[string]string
+		var errors []error
 
 		action := func() {
-			profile, error = core.DetectCurrentProfile()
+			envVars, errors = core.DetectCurrentProfile()
 			time.Sleep(time.Millisecond * 500)
 		}
 
@@ -56,16 +56,19 @@ to quickly create a Cobra application.`,
 			Run()
 
 		if err != nil {
-			fmt.Println(ui.SuccessStyle.Render(err.Error()))
+			fmt.Println(ui.ErrorStyle.Render(err.Error()))
 			return
 		}
 
-		if error != nil {
-			fmt.Println(ui.ErrorStyle.Render(error.Error()))
-			return
+		if len(errors) > 0 {
+			for _, err := range errors {
+				fmt.Println(ui.ErrorStyle.Render(err.Error()))
+			}
+		} else {
+			for key, value := range envVars {
+				fmt.Println(ui.SuccessStyle.Render(fmt.Sprintf("%s: %s", key, value)))
+			}
 		}
-
-		fmt.Println(ui.SuccessStyle.Render(fmt.Sprint("Current profile: ", profile)))
 	},
 }
 
@@ -80,5 +83,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

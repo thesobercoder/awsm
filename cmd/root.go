@@ -24,7 +24,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -44,19 +43,20 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		fmt.Print("\n")
-		cmdPathParts := strings.Fields(cmd.CommandPath())
-		if len(cmdPathParts) > 1 {
-			switch cmdPathParts[1] {
-			case "doctor":
-				// Ignore these commands
-			default:
-				_, errors := core.Doctor()
-				if len(errors) > 0 {
-					for _, err := range errors {
-						fmt.Println(ui.SuccessStyle.Render(err.Error()))
-					}
-					os.Exit(1)
+		switch cmd.CommandPath() {
+		case "awsm doctor",
+			"awsm profile switch",
+			"awsm profile login",
+			"awsm profile logout",
+			"awsm profile get":
+			// Ignore these commands
+		default:
+			_, errors := core.Doctor()
+			if len(errors) > 0 {
+				for _, err := range errors {
+					fmt.Println(ui.SuccessStyle.Render(err.Error()))
 				}
+				os.Exit(1)
 			}
 		}
 	},

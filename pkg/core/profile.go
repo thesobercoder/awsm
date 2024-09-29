@@ -69,27 +69,56 @@ func SwitchProfile(profile string, login bool) (string, error) {
 	return path, nil
 }
 
-func DetectCurrentProfile() (string, error) {
-	if value, exists := os.LookupEnv("AWS_PROFILE"); exists {
-		return value, nil
+func DetectCurrentProfile() (map[string]string, []error) {
+	envVars := make(map[string]string)
+	var errors []error
+
+	loadEnvironment := func() {
+		if value, exists := os.LookupEnv("AWS_PROFILE"); exists {
+			envVars["AWS_PROFILE"] = value
+		} else {
+			errors = append(errors, NewAWSMError("AWS_PROFILE not found in environment", EnvironmentError))
+		}
+
+		if value, exists := os.LookupEnv("AWS_DEFAULT_PROFILE"); exists {
+			envVars["AWS_DEFAULT_PROFILE"] = value
+		} else {
+			errors = append(errors, NewAWSMError("AWS_DEFAULT_PROFILE not found in environment", EnvironmentError))
+		}
+
+		if value, exists := os.LookupEnv("AWS_EB_PROFILE"); exists {
+			envVars["AWS_EB_PROFILE"] = value
+		} else {
+			errors = append(errors, NewAWSMError("AWS_EB_PROFILE not found in environment", EnvironmentError))
+		}
+
+		if value, exists := os.LookupEnv("AWS_REGION"); exists {
+			envVars["AWS_REGION"] = value
+		} else {
+			errors = append(errors, NewAWSMError("AWS_REGION not found in environment", EnvironmentError))
+		}
+
+		if value, exists := os.LookupEnv("AWS_DEFAULT_REGION"); exists {
+			envVars["AWS_DEFAULT_REGION"] = value
+		} else {
+			errors = append(errors, NewAWSMError("AWS_DEFAULT_REGION not found in environment", EnvironmentError))
+		}
 	}
 
-	if value, exists := os.LookupEnv("AWS_DEFAULT_PROFILE"); exists {
-		return value, nil
+	// Check environment variables directly
+	loadEnvironment()
+
+	// Load .env file and check again
+	if len(errors) > 0 {
+		err := godotenv.Load()
+		if err != nil {
+			errors = append(errors, NewAWSMError("Error loading .env file", IOError))
+		} else {
+			// Clear previous errors since they might be resolved with .env file
+			errors = nil
+			loadEnvironment()
+		}
 	}
 
-	err := godotenv.Load()
-	if err != nil {
-		return "", NewAWSMError("Error loading .env file", IOError)
-	}
-
-	if value, exists := os.LookupEnv("AWS_PROFILE"); exists {
-		return value, nil
-	}
-
-	if value, exists := os.LookupEnv("AWS_DEFAULT_PROFILE"); exists {
-		return value, nil
-	}
-
-	return "", NewAWSMError("No AWS profile found in environment", EnvironmentError)
+	return envVars, errors
 }
