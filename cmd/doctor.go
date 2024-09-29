@@ -28,6 +28,7 @@ import (
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
 	"github.com/thesobercoder/awsm/pkg/core"
+	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
 // doctorCmd represents the doctor command
@@ -39,9 +40,10 @@ var doctorCmd = &cobra.Command{
 If AWS CLI is not installed, an error message will be displayed.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var messages []string
+		var errors []*core.AWSMError
 
 		action := func() {
-			messages = core.Doctor()
+			messages, errors = core.Doctor()
 			time.Sleep(time.Millisecond * 500)
 		}
 
@@ -56,7 +58,11 @@ If AWS CLI is not installed, an error message will be displayed.`,
 		}
 
 		for _, msg := range messages {
-			fmt.Println(msg)
+			fmt.Println(ui.SuccessStyle.Render(msg))
+		}
+
+		for _, err := range errors {
+			fmt.Println(ui.SuccessStyle.Render(err.Message))
 		}
 	},
 }

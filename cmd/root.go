@@ -24,9 +24,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"github.com/thesobercoder/awsm/pkg/core"
+	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
 // RootCmd represents the base command when called without any subcommands
@@ -41,6 +44,21 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		fmt.Print("\n")
+		cmdPathParts := strings.Fields(cmd.CommandPath())
+		if len(cmdPathParts) > 1 {
+			switch cmdPathParts[1] {
+			case "doctor", "profile":
+				// Ignore these commands
+			default:
+				_, errors := core.Doctor()
+				if len(errors) > 0 {
+					for _, err := range errors {
+						fmt.Println(ui.SuccessStyle.Render(err.Message))
+					}
+					os.Exit(1)
+				}
+			}
+		}
 	},
 }
 

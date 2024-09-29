@@ -6,37 +6,42 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/thesobercoder/awsm/pkg/ui"
 )
 
-func Doctor() []string {
-	messages := []string{}
-
+func Doctor() (successMessages []string, errorMessages []*AWSMError) {
 	if path, err := exec.LookPath("aws"); err != nil {
-		messages = append(messages, ui.ErrorStyle.Render("AWS CLI not found in PATH"))
+		errorMessages = append(errorMessages, NewAWSMError("AWS CLI not found in PATH", AWSCLICheck))
 	} else {
-		messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI found in PATH %s", path)))
+		successMessages = append(successMessages, fmt.Sprintf("AWS CLI found in PATH %s", path))
 	}
 
 	configFilePath := filepath.Join(os.Getenv("HOME"), ".aws", "config")
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		messages = append(messages, ui.ErrorStyle.Render(fmt.Sprintf("AWS CLI config file not found at %s", configFilePath)))
+		errorMessages = append(errorMessages, &AWSMError{
+			Message: fmt.Sprintf("AWS CLI config file not found at %s", configFilePath),
+			Context: AWSConfigFileCheck,
+		})
 	} else {
-		messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI config file found at %s", configFilePath)))
+		successMessages = append(successMessages, fmt.Sprintf("AWS CLI config file found at %s", configFilePath))
 	}
 
 	validProfiles, err := ListProfiles()
 	if err != nil {
-		messages = append(messages, ui.ErrorStyle.Render("Failed to get AWS CLI profiles"))
-		return messages
+		errorMessages = append(errorMessages, &AWSMError{
+			Message: "Failed to get AWS CLI profiles",
+			Context: AWSProfileListing,
+		})
+		return successMessages, errorMessages
 	}
 
 	if len(validProfiles) == 0 {
-		messages = append(messages, ui.ErrorStyle.Render("No profiles found in AWS CLI config file"))
+		errorMessages = append(errorMessages, &AWSMError{
+			Message: "No profiles found in AWS CLI config file",
+			Context: AWSProfileListing,
+		})
 	} else {
-		messages = append(messages, ui.SuccessStyle.Render(fmt.Sprintf("AWS CLI profiles found: %s", strings.Join(validProfiles, ", "))))
+		successMessages = append(successMessages, fmt.Sprintf("AWS CLI profiles found: %s", strings.Join(validProfiles, ", ")))
 	}
 
-	return messages
+	return successMessages, errorMessages
 }
