@@ -2,19 +2,18 @@ AWSM (AWS CLI Manager)
 
 A CLI tool to manage AWS resources sanely.
 
-## Usage
-
-```sh
-awsm <command> [arguments]
-```
-
 ## Installation
 
 ```sh
-go install github.com/thesobercoder/awsm@latest
+git clone https://github.com/thesobercoder/awsm.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/awsm
+```
+
+## Usage
+
+```sh
+awsm
 ```
 
 ## License
 
-MIT License
-Copyright (c) 2024 Soham Dasgupta soham@thesobercoder.com
+MIT License Copyright (c) 2024 Soham Dasgupta soham@thesobercoder.com
