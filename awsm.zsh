@@ -1,6 +1,8 @@
 #!/usr/bin/env zsh
 
 source ${0:A:h}/src/_profile.zsh
+source ${0:A:h}/src/_region.zsh
+source ${0:A:h}/src/_logs.zsh
 source ${0:A:h}/src/_utils.zsh
 
 function awsm() {
@@ -10,9 +12,10 @@ function awsm() {
   if [ $# -eq 0 ]; then
     cmd=$(gum choose profile region logs doctor --header "Select command:")
     case $cmd in
-    profile) action=$(gum choose switch get list login logout --header "Select profile action:") ;;
-    region) action=$(gum choose get list clear --header "Select region action:") ;;
-    logs | doctor) action="" ;;
+    profile) action=$(gum choose switch get list login logout --header "Select action:") ;;
+    region) action=$(gum choose get set clear --header "Select action:") ;;
+    logs) action=$(gum choose search purge --header "Select action:") ;;
+    doctor) action="" ;;
     *)
       _error_style "Unknown command: $cmd"
       return 1
@@ -29,10 +32,11 @@ function awsm() {
   profile_list) _profile_list ;;
   profile_login) _profile_login ;;
   profile_logout) _profile_logout ;;
-  region_get) echo "Running region get" ;;
-  region_list) echo "Running region list" ;;
-  region_clear) echo "Running region clear" ;;
-  logs_) echo "Running logs" ;;
+  region_get) _region_get ;;
+  region_set) _region_set ;;
+  region_clear) _region_clear ;;
+  logs_search) _logs_search ;;
+  logs_purge) _logs_purge ;;
   doctor_) echo "Running doctor" ;;
   *)
     _error_style "Unknown command or action: $cmd $action"
