@@ -4,7 +4,7 @@ source ${0:A:h}/src/_profile.zsh
 source ${0:A:h}/src/_utils.zsh
 
 function awsm() {
-  gum style --foreground 2 --bold "AWS CLI Manager"
+  gum style --foreground 150 --bold "AWS CLI Manager"
   echo "\r"
 
   # gum style \

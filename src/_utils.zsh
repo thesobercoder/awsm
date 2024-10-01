@@ -1,5 +1,5 @@
 function _success_style() {
-  echo "$(gum style --foreground 2 "\u2714 ")$*"
+  echo "$(gum style --foreground 150 "\u2714 ")$*"
 }
 
 function _error_style() {
@@ -7,7 +7,7 @@ function _error_style() {
 }
 
 function _list_style() {
-  echo "$(gum style --foreground 2 "\u2192 ")$*"
+  echo "$(gum style --foreground 150 "\u2192 ")$*"
 }
 
 function _header_style() {
