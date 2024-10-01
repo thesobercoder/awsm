@@ -7,48 +7,36 @@ function awsm() {
   gum style --foreground 150 --bold "AWS CLI Manager"
   echo "\r"
 
-  # gum style \
-  #   --foreground 2 --border-foreground 205 --border rounded --bold \
-  #   --align center --margin "1 2" --padding "2 4" ""
-
-  cmd=$(gum choose profile region logs doctor --header "Select command:")
-
-  case $cmd in
-  "profile")
-    action=$(gum choose switch get list login logout --header "Select action:")
-    case $action in
-    "switch")
-      _profile_switch
-      ;;
-    "get")
-      _profile_get
-      ;;
-    "list")
-      _profile_list
-      ;;
-    "login")
-      _profile_login
-      ;;
-    "logout")
-      _profile_logout
-      ;;
+  if [ $# -eq 0 ]; then
+    cmd=$(gum choose profile region logs doctor --header "Select command:")
+    case $cmd in
+    profile) action=$(gum choose switch get list login logout --header "Select profile action:") ;;
+    region) action=$(gum choose get list clear --header "Select region action:") ;;
+    logs | doctor) action="" ;;
     *)
-      echo "Unknown action $action"
+      _error_style "Unknown command: $cmd"
+      return 1
       ;;
     esac
-    ;;
-  "region")
-    action=$(gum choose get list clear --header "Select action:")
-    echo "Running profile $action"
-    ;;
-  "logs")
-    echo "Running logs"
-    ;;
-  "doctor")
-    echo "Running doctor"
-    ;;
+  else
+    cmd="$1"
+    action="$2"
+  fi
+
+  case "${cmd}_${action}" in
+  profile_switch) _profile_switch ;;
+  profile_get) _profile_get ;;
+  profile_list) _profile_list ;;
+  profile_login) _profile_login ;;
+  profile_logout) _profile_logout ;;
+  region_get) echo "Running region get" ;;
+  region_list) echo "Running region list" ;;
+  region_clear) echo "Running region clear" ;;
+  logs_) echo "Running logs" ;;
+  doctor_) echo "Running doctor" ;;
   *)
-    echo "Unknown command $cmd"
+    _error_style "Unknown command or action: $cmd $action"
+    return 1
     ;;
   esac
 }
