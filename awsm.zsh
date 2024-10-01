@@ -24,7 +24,7 @@ function awsm() {
       _profile_get
       ;;
     "list")
-      echo "Running list"
+      _profile_list
       ;;
     "login")
       _profile_login

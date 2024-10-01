@@ -55,17 +55,30 @@ function _profile_get() {
     _error_style "No active profile found"
     return 1
   fi
+  _header_style "Current Profile:"
   while read -r line; do
-    _success_style $line
+    _list_style $line
   done <<<"$result"
 }
 
 function _profile_logout() {
-  gum spin --spinner dot --title "Logging out" --show-output -- aws sso logout
+  local output=$(gum spin --spinner dot --title "Logging out" --show-output -- aws sso logout >/dev/null)
   if [[ $? -ne 0 ]]; then
-    _error_style "$?"
+    _error_style "$output"
     return $?
   fi
   unset AWS_PROFILE AWS_DEFAULT_PROFILE AWS_EB_PROFILE AWS_ACCOUNT AWS_PROFILE_REGION AWS_REGION AWS_DEFAULT_REGION
   _success_style "Successfully logged out"
+}
+
+function _profile_list() {
+  result=$(gum spin --spinner dot --title "Fetching profiles" --show-output -- aws configure list-profiles --no-cli-pager)
+  if [[ -z $result ]]; then
+    _error_style "No profiles found"
+    return 1
+  fi
+  _header_style "Profiles:"
+  while read -r line; do
+    _list_style $line
+  done <<<"$result"
 }
