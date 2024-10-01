@@ -27,8 +27,6 @@ function _logs_search() {
     final_string="%%"
   fi
 
-  echo $final_string
-
   gum spin --spinner dot --title "Fetching log streams" --show-output -- aws logs filter-log-events --filter-pattern "%$search_pattern%" --log-group-name "$selected_group" --start-time "$(date -d "$start_time" +%s)000" --end-time "$(date -d "$end_time" +%s)000" --query "events[*].logStreamName" --no-cli-pager --output json | jq -r ".[]" | sort -u | while read -r log_stream; do
     log_stream="${log_stream//[[:space:]]/}"
 
