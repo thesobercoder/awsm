@@ -30,7 +30,7 @@ function awsm() {
       _profile_login
       ;;
     "logout")
-      echo "Running logout"
+      _profile_logout
       ;;
     *)
       echo "Unknown action $action"
