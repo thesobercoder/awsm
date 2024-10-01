@@ -1,23 +1,15 @@
 #!/usr/bin/env zsh
 
-source ./src/_profile.zsh
-source ./src/_utils.zsh
+source ${0:A:h}/src/_profile.zsh
+source ${0:A:h}/src/_utils.zsh
 
 function awsm() {
-  gum style \
-    --foreground 2 --border-foreground 205 --border rounded --bold \
-    --align center --margin "1 2" --padding "2 4" <<'EOF'
-   _____      _      _    ______    __    __
-  /\___/\    /_/\  /\_\  / ____/\  /_/\  /\_\
- / / _ \ \   ) ) )( ( (  ) ) __\/  ) ) \/ ( (
- \ \(_)/ /  /_/ //\\ \_\  \ \ \   /_/ \  / \_\
- / / _ \ \  \ \ /  \ / /  _\ \ \  \ \ \\// / /
-( (_( )_) )  )_) /\ (_(  )____) )  )_) )( (_(
- \/_/ \_\/   \_\/  \/_/  \____\/   \_\/  \/_/
+  gum style --foreground 2 --bold "AWS CLI Manager"
+  echo "\r"
 
-AWS CLI Manager
-@thesobercoder
-EOF
+  # gum style \
+  #   --foreground 2 --border-foreground 205 --border rounded --bold \
+  #   --align center --margin "1 2" --padding "2 4" ""
 
   cmd=$(gum choose profile region logs doctor --header "Select command:")
 
@@ -26,7 +18,7 @@ EOF
     action=$(gum choose switch get list login logout --header "Select action:")
     case $action in
     "switch")
-      _switch_profile
+      _profile_switch
       ;;
     "get")
       echo "Running get"
@@ -35,7 +27,7 @@ EOF
       echo "Running list"
       ;;
     "login")
-      echo "Running login"
+      _profile_login
       ;;
     "logout")
       echo "Running logout"
