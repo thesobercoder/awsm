@@ -49,3 +49,10 @@ function _profile_login() {
   _set_profile_vars $profile
   _success_style "Logged into profile $profile"
 }
+
+function _profile_get() {
+  result=$(gum spin --spinner dot --title "Fetching current profile" -- aws sts get-caller-identity --no-cli-pager --output json | jq -r '"UserId: \(.UserId)\nAccount: \(.Account)\nArn: \(.Arn)"')
+  while read -r line; do
+    _success_style $line
+  done <<<"$result"
+}

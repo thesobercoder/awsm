@@ -21,7 +21,7 @@ function awsm() {
       _profile_switch
       ;;
     "get")
-      echo "Running get"
+      _profile_get
       ;;
     "list")
       echo "Running list"
