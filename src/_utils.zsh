@@ -3,7 +3,11 @@ function _success_style() {
 }
 
 function _error_style() {
-  echo "$(gum style --foreground 1 "\u2716 ")$*"
+  echo "$(gum style --foreground 160 "\u2716 ")$*"
+}
+
+function _warn_style() {
+  echo "$(gum style --foreground 215 "\u26a0 ")$*"
 }
 
 function _list_style() {
