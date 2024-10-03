@@ -26,7 +26,7 @@ source ${0:A:h}/src/_logs.zsh
 source ${0:A:h}/src/_utils.zsh
 
 function awsm() {
-  gum style --foreground 150 --bold "AWS CLI Manager"
+  # gum style --foreground 150 --bold "AWS CLI Manager"
   echo "\r"
 
   if [ $# -eq 0 ]; then
@@ -35,7 +35,7 @@ function awsm() {
     profile) action=$(gum choose switch get list login logout --header "Select action:") ;;
     region) action=$(gum choose get set clear --header "Select action:") ;;
     logs) action=$(gum choose search purge --header "Select action:") ;;
-    doctor) action="" ;;
+    help | doctor) action="" ;;
     *)
       _error_style "Unknown command: $cmd"
       return 1
@@ -45,7 +45,11 @@ function awsm() {
     cmd="$1"
     shift
     action="$1"
-    shift
+    case "${cmd}_${action}" in
+    profile_switch | profile_login | region_set)
+      shift
+      ;;
+    esac
   fi
 
   case "${cmd}_${action}" in
@@ -60,9 +64,33 @@ function awsm() {
   logs_search) _logs_search ;;
   logs_purge) _logs_purge ;;
   doctor_) echo "Running doctor" ;;
+  help_) _show_help ;;
   *)
     _error_style "Unknown command or action: $cmd $action"
     return 1
     ;;
   esac
+}
+
+function _show_help() {
+  _header_style "AWS CLI Manager - Help"
+  echo "Usage: awsm <command> <action> [options]"
+  echo
+  _header_style "Commands and Actions:"
+  echo "  profile switch [-p profile] : Switches AWS profile. Interactive if -p is not specified."
+  echo "  profile get                 : Displays the current AWS profile identity."
+  echo "  profile list                : Lists available AWS profiles."
+  echo "  profile login [-p profile]  : Logs into AWS SSO profile. Interactive if -p is not specified."
+  echo "  profile logout              : Logs out of AWS SSO."
+  echo "  region get                  : Displays the current AWS region."
+  echo "  region set <region>         : Sets the AWS region."
+  echo "  region clear                : Clears the current AWS region setting."
+  echo "  logs search                 : Searches logs based on criteria."
+  echo "  logs purge                  : Purges logs based on criteria."
+  echo "  doctor                      : Runs diagnostics."
+  echo "  help                        : Displays this help message."
+
+  echo
+  _header_style "Options:"
+  echo "  -p <profile>                : Specify the AWS profile for profile-related commands."
 }

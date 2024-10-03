@@ -20,17 +20,33 @@
 
 function _logs_search() {
   export MSYS_NO_PATHCONV=1
-  local selected_group=$(gum choose --height 30 --header "Choose log group:" $(gum spin --spinner dot --title "Fetching log groups" --show-output -- aws logs describe-log-groups --query "logGroups[*].logGroupName" --no-cli-pager --output json | jq -r '.[]' | tr "[:space:]" "\n"))
-  if [[ -z $selected_group ]]; then
+
+  # Fetch log groups
+  local log_groups=$(gum spin --spinner dot --title "Fetching log groups" --show-output -- aws logs describe-log-groups --query "logGroups[*].logGroupName" --no-cli-pager --output json | jq -r '.[]')
+
+  # Check if log groups are empty
+  if [[ -z "$log_groups" ]]; then
+    _error_style "No log groups found."
+    unset MSYS_NO_PATHCONV
     return 1
   fi
+
+  local selected_group=$(echo "$log_groups" | tr "[:space:]" "\n" | gum choose --height 30 --header "Choose log group:")
+  if [[ -z $selected_group ]]; then
+    _error_style "No log group selected."
+    unset MSYS_NO_PATHCONV
+    return 1
+  fi
+
   local end_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  local start_time=$(date -u -d "1 day ago" +"%Y-%m-%dT%H:%M:%SZ")
+  local start_time=$(date -u -v-1d +"%Y-%m-%dT%H:%M:%SZ")
   local search_pattern=$(gum input --prompt "Search Pattern: ")
   if [[ -z $search_pattern ]]; then
     _error_style "Search pattern must be provided"
+    unset MSYS_NO_PATHCONV
     return 1
   fi
+
   local exclude_patterns=$(gum input --prompt "Exclude Patterns(comma separated): ")
   if [[ -n $exclude_patterns ]]; then
     local result=""
@@ -47,7 +63,15 @@ function _logs_search() {
     final_string="%%"
   fi
 
-  gum spin --spinner dot --title "Fetching log streams" --show-output -- aws logs filter-log-events --filter-pattern "%$search_pattern%" --log-group-name "$selected_group" --start-time "$(date -d "$start_time" +%s)000" --end-time "$(date -d "$end_time" +%s)000" --query "events[*].logStreamName" --no-cli-pager --output json | jq -r ".[]" | sort -u | while read -r log_stream; do
+  local log_streams=$(gum spin --spinner dot --title "Fetching log streams" --show-output -- aws logs filter-log-events --filter-pattern "%$search_pattern%" --log-group-name "$selected_group" --start-time "$(date -d "$start_time" +%s)000" --end-time "$(date -d "$end_time" +%s)000" --query "events[*].logStreamName" --no-cli-pager --output json | jq -r ".[]" | sort -u)
+
+  if [[ -z "$log_streams" ]]; then
+    _error_style "No log streams found for the selected group and search pattern."
+    unset MSYS_NO_PATHCONV
+    return 1
+  fi
+
+  echo "$log_streams" | while read -r log_stream; do
     log_stream="${log_stream//[[:space:]]/}"
 
     _success_style "Fetching logs from stream ${log_stream##*/}\n"
@@ -61,8 +85,6 @@ function _logs_search() {
       --filter-pattern "$final_string" \
       --no-cli-pager \
       --output json | jq -r '.[]' | grep -v "^$"
-
-    #
   done
 
   unset MSYS_NO_PATHCONV
@@ -70,10 +92,23 @@ function _logs_search() {
 
 function _logs_purge() {
   export MSYS_NO_PATHCONV=1
-  local group=$(gum choose --height 40 --header "Choose log group:" $(gum spin --spinner dot --title "Fetching log groups" --show-output -- aws logs describe-log-groups --query "logGroups[*].logGroupName" --no-cli-pager --output json | jq -r '.[]' | tr "[:space:]" "\n"))
-  if [[ -z $group ]]; then
+
+  # Fetch log groups
+  local log_groups=$(gum spin --spinner dot --title "Fetching log groups" --show-output -- aws logs describe-log-groups --query "logGroups[*].logGroupName" --no-cli-pager --output json | jq -r '.[]')
+
+  # Check if log groups are empty
+  if [[ -z "$log_groups" ]]; then
+    _error_style "No log groups found."
+    unset MSYS_NO_PATHCONV
     return 1
   fi
-  echo $group
-  unset MSYS_NO_PATHCONV
+
+  local selected_group=$(echo "$log_groups" | tr "[:space:]" "\n" | gum choose --height 30 --header "Choose log group:")
+  if [[ -z $selected_group ]]; then
+    _error_style "No log group selected."
+    unset MSYS_NO_PATHCONV
+    return 1
+  fi
+
+  echo $selected_group
 }

@@ -5,7 +5,7 @@ A CLI tool to invoke the AWS CLI delightfully.
 ## Prerequisites
 
 - ZSH
-- [Oh My ZSH](https://github.com/ohmyzsh/ohmyzsh)
+- [Oh My Zsh](https://github.com/ohmyzsh/ohmyzsh)
 - [AWS CLI v2](https://github.com/aws/aws-cli)
 - [jq](https://github.com/jqlang/jq)
 - [gum](https://github.com/charmbracelet/gum)
@@ -20,7 +20,7 @@ git clone https://github.com/thesobercoder/awsm.git ${ZSH_CUSTOM:-~/.oh-my-zsh/c
 ## Usage
 
 ```sh
-awsm
+awsm help
 ```
 
 ## License
