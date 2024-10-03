@@ -1,4 +1,4 @@
-AWSM (AWS CLI Manager)
+# AWSM (AWS CLI Manager)
 
 A CLI tool to invoke the AWS CLI delightfully.
 
