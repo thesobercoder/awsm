@@ -43,17 +43,19 @@ function awsm() {
     esac
   else
     cmd="$1"
-    action="$2"
+    shift
+    action="$1"
+    shift
   fi
 
   case "${cmd}_${action}" in
-  profile_switch) _profile_switch ;;
+  profile_switch) _profile_switch "$@" ;;
   profile_get) _profile_get ;;
   profile_list) _profile_list ;;
-  profile_login) _profile_login ;;
+  profile_login) _profile_login "$@" ;;
   profile_logout) _profile_logout ;;
   region_get) _region_get ;;
-  region_set) _region_set ;;
+  region_set) _region_set "$@" ;;
   region_clear) _region_clear ;;
   logs_search) _logs_search ;;
   logs_purge) _logs_purge ;;

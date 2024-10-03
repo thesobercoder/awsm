@@ -45,26 +45,81 @@ function _profile_update() {
 }
 
 function _profile_switch() {
-  local profile=$(_profile_select)
-  if [[ $? -ne 0 ]]; then
-    _error_style "No profile selected"
-    return 1
+  local profile=""
+
+  # Parse command-line options specifically for the `switch` action
+  while getopts ":p:" opt; do
+    case ${opt} in
+    p)
+      profile=$OPTARG
+      ;;
+    \?)
+      _error_style "Invalid option: -$OPTARG"
+      return 1
+      ;;
+    :)
+      _error_style "Option -$OPTARG requires an argument."
+      return 1
+      ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
+  # If no profile is provided, use interactive selection
+  if [[ -z $profile ]]; then
+    profile=$(_profile_select)
+    if [[ $? -ne 0 || -z $profile ]]; then
+      _error_style "No profile selected"
+      return 1
+    fi
   fi
+
+  # Proceed with updating the profile
   _profile_update $profile
   _success_style "Switched to profile $profile"
 }
 
 function _profile_login() {
-  local profile=$(_profile_select)
-  if [[ $? -ne 0 ]]; then
-    _error_style "No profile selected"
-    return 1
+  local profile=""
+
+  # Parse command-line options specifically for the `login` action
+  while getopts ":p:" opt; do
+    case ${opt} in
+    p)
+      profile=$OPTARG
+      ;;
+    \?)
+      _error_style "Invalid option: -$OPTARG"
+      return 1
+      ;;
+    :)
+      _error_style "Option -$OPTARG requires an argument."
+      return 1
+      ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
+  # If no profile is provided, use interactive selection
+  if [[ -z $profile ]]; then
+    profile=$(_profile_select)
+    if [[ $? -ne 0 || -z $profile ]]; then
+      _error_style "No profile selected"
+      return 1
+    fi
   fi
+
+  # Attempt to log in with the selected or provided profile
   local output=$(gum spin --spinner dot --title "Logging in" --show-output -- aws sso login --profile $profile >/dev/null)
+
   if [[ $? -ne 0 ]]; then
-    _error_style "$?"
+    _error_style "$output"
     return $?
   fi
+
+  # Update the session with the logged-in profile
   _profile_update $profile
   _success_style "Logged into profile $profile"
 }
