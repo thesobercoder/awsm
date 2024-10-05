@@ -25,11 +25,35 @@ function _region_get() {
 }
 
 function _region_set() {
-  unset AWS_REGION AWS_DEFAULT_REGION
-  local region=$(gum choose --header "Choose region:" $(gum spin --spinner dot --title "Fetching regions" --show-output -- aws ec2 describe-regions --region "us-east-1" --output json | jq -r ".Regions[].RegionName" | tr "[:space:]" "\n"))
+  local region=""
+
+  while getopts ":r:" opt; do
+    case ${opt} in
+    r)
+      region=$OPTARG
+      ;;
+    \?)
+      _error_style "Invalid option: -$OPTARG"
+      return 1
+      ;;
+    :)
+      _error_style "Option -$OPTARG requires an argument."
+      return 1
+      ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
   if [[ -z $region ]]; then
-    return 1
+    region=$(gum choose --header "Choose region:" $(gum spin --spinner dot --title "Fetching regions" --show-output -- aws ec2 describe-regions --region "us-east-1" --output json | jq -r ".Regions[].RegionName" | tr "[:space:]" "\n"))
+    if [[ $? -ne 0 || -z $region ]]; then
+      _error_style "No region selected"
+      return 1
+    fi
   fi
+
+  unset AWS_REGION AWS_DEFAULT_REGION
   export AWS_REGION=$region
   export AWS_DEFAULT_REGION=$region
 }

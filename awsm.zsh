@@ -22,19 +22,16 @@
 
 source ${0:A:h}/src/_profile.zsh
 source ${0:A:h}/src/_region.zsh
-source ${0:A:h}/src/_logs.zsh
 source ${0:A:h}/src/_utils.zsh
 
 function awsm() {
-  # gum style --foreground 150 --bold "AWS CLI Manager"
   echo "\r"
 
   if [ $# -eq 0 ]; then
     cmd=$(gum choose profile region logs doctor --header "Select command:")
     case $cmd in
-    profile) action=$(gum choose switch get list login logout --header "Select action:") ;;
+    profile) action=$(gum choose switch login logout get list --header "Select action:") ;;
     region) action=$(gum choose get set clear --header "Select action:") ;;
-    logs) action=$(gum choose search purge --header "Select action:") ;;
     help | doctor) action="" ;;
     *)
       _error_style "Unknown command: $cmd"
@@ -61,8 +58,6 @@ function awsm() {
   region_get) _region_get ;;
   region_set) _region_set "$@" ;;
   region_clear) _region_clear ;;
-  logs_search) _logs_search ;;
-  logs_purge) _logs_purge ;;
   doctor_) echo "Running doctor" ;;
   help_) _show_help ;;
   *)
@@ -83,14 +78,59 @@ function _show_help() {
   echo "  profile login [-p profile]  : Logs into AWS SSO profile. Interactive if -p is not specified."
   echo "  profile logout              : Logs out of AWS SSO."
   echo "  region get                  : Displays the current AWS region."
-  echo "  region set <region>         : Sets the AWS region."
+  echo "  region set [-r region]      : Sets the AWS region. Interactive if -s is not specified."
   echo "  region clear                : Clears the current AWS region setting."
-  echo "  logs search                 : Searches logs based on criteria."
-  echo "  logs purge                  : Purges logs based on criteria."
   echo "  doctor                      : Runs diagnostics."
   echo "  help                        : Displays this help message."
 
   echo
   _header_style "Options:"
   echo "  -p <profile>                : Specify the AWS profile for profile-related commands."
+  echo "  -r <region>                 : Specify the AWS region for region-related commands."
 }
+
+function _awsm() {
+  local -a commands actions options
+  local state
+
+  _arguments -C \
+    '1: :->command' \
+    '2: :->action' \
+    '*: :->args'
+
+  case $state in
+  command)
+    commands=(
+      'profile:Manage AWS profiles'
+      'region:Manage AWS regions'
+      'doctor:Run diagnostics'
+      'help:Display help message'
+    )
+    _describe -t commands 'awsm commands' commands
+    ;;
+  action)
+    case $words[2] in
+    profile)
+      actions=(
+        'switch:Switch AWS profile'
+        'get:Display current AWS profile identity'
+        'list:List available AWS profiles'
+        'login:Log into AWS SSO profile'
+        'logout:Log out of AWS SSO'
+      )
+      _describe -t actions 'profile actions' actions
+      ;;
+    region)
+      actions=(
+        'get:Display current AWS region'
+        'set:Set AWS region'
+        'clear:Clear current AWS region setting'
+      )
+      _describe -t actions 'region actions' actions
+      ;;
+    esac
+    ;;
+  esac
+}
+
+compdef _awsm awsm
