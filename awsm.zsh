@@ -58,7 +58,7 @@ function awsm() {
   region_get) _region_get ;;
   region_set) _region_set "$@" ;;
   region_clear) _region_clear ;;
-  doctor_) echo "Running doctor" ;;
+  doctor_) _run_doctor ;;
   help_) _show_help ;;
   *)
     _error_style "Unknown command or action: $cmd $action"
@@ -67,8 +67,38 @@ function awsm() {
   esac
 }
 
+function _run_doctor() {
+  # Check if AWS CLI is installed
+  if command -v aws &>/dev/null; then
+    _success_style "AWS CLI is installed."
+  else
+    _error_style "AWS CLI is not installed."
+  fi
+
+  # Check if jq is installed
+  if command -v jq &>/dev/null; then
+    _success_style "jq is installed."
+  else
+    _error_style "jq is not installed."
+  fi
+
+  # Check if gum is installed
+  if command -v gum &>/dev/null; then
+    _success_style "gum is installed."
+  else
+    _error_style "gum is not installed."
+  fi
+
+  # Check if AWS config file exists
+  if [ -f "$HOME/.aws/config" ]; then
+    _success_style "$HOME/.aws/config exists."
+  else
+    _error_style "$HOME/.aws/config does not exist."
+  fi
+}
+
 function _show_help() {
-  _header_style "AWS CLI Manager - Help"
+  _header_style "AWS CLI Manager"
   echo "Usage: awsm <command> <action> [options]"
   echo
   _header_style "Commands and Actions:"
